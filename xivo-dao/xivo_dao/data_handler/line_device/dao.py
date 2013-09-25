@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 @daosession
 def find_device_from_line(session, line):
-    device_row = session.query(LineSchema).filter(LineSchema.id == line.id).first()
-    if not device_row:
+    line_row = session.query(LineSchema).filter(LineSchema.id == line.id).first()
+    if not line_row:
         raise ElementNotExistsError('Line', id=line.id)
-    return device_dao.find(device_row.device)
+    return device_dao.find(line_row.device)
