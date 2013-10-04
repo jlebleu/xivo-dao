@@ -231,7 +231,7 @@ class TestExtensionDao(DAOTestCase):
 
         created_extension = extension_dao.create(extension)
 
-        row = self.session.query(ExtensionSchema).filter(ExtensionSchema.id == created_extension.id).first()
+        row = self.session.query(ExtensionSchema).get(created_extension.id)
 
         assert_that(row.id, equal_to(created_extension.id))
         assert_that(row.exten, equal_to(exten))
