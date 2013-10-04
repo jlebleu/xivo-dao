@@ -15,17 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.helpers.abstract_model import AbstractModels, Ordering
+from xivo_dao.converters.database_converter import DatabaseConverter
+from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 
 
-class User(AbstractModels):
+class UserDbConverter(DatabaseConverter):
 
-    MANDATORY = [
-        'firstname',
-    ]
-
-    # mapping = {db_field: model_field}
-    _MAPPING = {
+    DB_TO_MODEL_MAPPING = {
         'id': 'id',
         'firstname': 'firstname',
         'lastname': 'lastname',
@@ -40,6 +37,42 @@ class User(AbstractModels):
         'language': 'language',
         'description': 'description'
     }
+
+    def __init__(self):
+        DatabaseConverter.__init__(self, self.DB_TO_MODEL_MAPPING, UserSchema, User)
+
+    def update_source(self, source, model):
+        DatabaseConverter.update_source(self, source, model)
+        source.callerid = model.determine_callerid()
+
+    def to_source(self, model):
+        source = DatabaseConverter.to_source(self, model)
+        source.callerid = model.determine_callerid()
+        return source
+
+
+class User(AbstractModels):
+
+    MANDATORY = [
+        'firstname',
+    ]
+
+    FIELDS = [
+        'id',
+        'firstname',
+        'lastname',
+        'callerid',
+        'outcallerid',
+        'username',
+        'password',
+        'musiconhold',
+        'mobilephonenumber',
+        'userfield',
+        'timezone',
+        'language',
+        'description'
+    ]
+
     _RELATION = {
         'voicemailid': 'voicemail_id'
     }
@@ -47,21 +80,13 @@ class User(AbstractModels):
     def __init__(self, *args, **kwargs):
         AbstractModels.__init__(self, *args, **kwargs)
 
-    def to_data_source(self, class_schema):
-        self._build_callerid()
-        return AbstractModels.to_data_source(self, class_schema)
-
-    def to_data_dict(self):
-        self._build_callerid()
-        return AbstractModels.to_data_dict(self)
-
     def to_user_data(self):
         self._build_callerid()
         return AbstractModels.to_user_data(self)
 
     def _build_callerid(self):
         try:
-            self.callerid = '"%s"' % self.fullname
+            self.callerid = self._generate_callerid()
         except AttributeError:
             return
 
@@ -71,7 +96,15 @@ class User(AbstractModels):
             self.lastname = ''
         return ' '.join([self.firstname, self.lastname])
 
+    def determine_callerid(self):
+        if hasattr(self, 'callerid'):
+            return self.callerid
+        return self._generate_callerid()
 
-class UserOrdering(object):
-    firstname = 'firstname'
-    lastname = 'lastname'
+    def _generate_callerid(self):
+        return '"%s"' % self.fullname
+
+
+UserOrdering = Ordering(['firstname', 'lastname'])
+
+db_converter = UserDbConverter()
