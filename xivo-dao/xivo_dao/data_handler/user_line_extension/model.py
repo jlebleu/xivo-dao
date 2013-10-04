@@ -15,7 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.user_line import UserLine as UserLineExtensionSchema
+from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.helpers.abstract_model import AbstractModels
+
+
+DB_TO_MODEL_MAPPING = {
+    'id': 'id',
+    'user_id': 'user_id',
+    'line_id': 'line_id',
+    'extension_id': 'extension_id',
+    'main_user': 'main_user',
+    'main_line': 'main_line'
+}
 
 
 class UserLineExtension(AbstractModels):
@@ -26,17 +38,16 @@ class UserLineExtension(AbstractModels):
         'extension_id',
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'id': 'id',
-        'user_id': 'user_id',
-        'line_id': 'line_id',
-        'extension_id': 'extension_id',
-        'main_user': 'main_user',
-        'main_line': 'main_line'
-    }
+    FIELDS = [
+        'id',
+        'user_id',
+        'line_id',
+        'extension_id',
+        'main_user',
+        'main_line',
+    ]
 
     _RELATION = {}
 
-    def __init__(self, *args, **kwargs):
-        AbstractModels.__init__(self, *args, **kwargs)
+
+db_converter = DatabaseConverter(DB_TO_MODEL_MAPPING, UserLineExtensionSchema, UserLineExtension)

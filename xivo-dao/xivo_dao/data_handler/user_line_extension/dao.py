@@ -20,18 +20,24 @@ from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
 from sqlalchemy.exc import SQLAlchemyError
-from model import UserLineExtension
+from model import db_converter
 from xivo_dao.data_handler.user import dao as user_dao
 
 
 @daosession
 def get(session, ule_id):
-    res = _new_query(session).filter(ULESchema.id == ule_id).first()
+    ule_row = _get_ule_row(session, ule_id)
 
-    if not res:
+    return db_converter.to_model(ule_row)
+
+
+def _get_ule_row(session, ule_id):
+    ule_row = session.query(ULESchema).filter(ULESchema.id == ule_id).first()
+
+    if not ule_row:
         raise ElementNotExistsError('UserLineExtension', id=ule_id)
 
-    return UserLineExtension.from_data_source(res)
+    return ule_row
 
 
 @daosession
@@ -42,7 +48,7 @@ def find_all(session):
 
     tmp = []
     for ule in res:
-        tmp.append(UserLineExtension.from_data_source(ule))
+        tmp.append(db_converter.to_model(ule))
 
     return tmp
 
@@ -50,19 +56,19 @@ def find_all(session):
 @daosession
 def find_all_by_user_id(session, user_id):
     ules = session.query(ULESchema).filter(ULESchema.user_id == user_id).all()
-    return [UserLineExtension.from_data_source(ule) for ule in ules]
+    return [db_converter.to_model(ule) for ule in ules]
 
 
 @daosession
 def find_all_by_extension_id(session, extension_id):
     ules = session.query(ULESchema).filter(ULESchema.extension_id == extension_id).all()
-    return [UserLineExtension.from_data_source(ule) for ule in ules]
+    return [db_converter.to_model(ule) for ule in ules]
 
 
 @daosession
 def find_all_by_line_id(session, line_id):
     ules = session.query(ULESchema).filter(ULESchema.line_id == line_id).all()
-    return [UserLineExtension.from_data_source(ule) for ule in ules]
+    return [db_converter.to_model(ule) for ule in ules]
 
 
 @daosession
@@ -80,7 +86,7 @@ def find_main_user(session, ule):
 
 @daosession
 def create(session, user_line_extension):
-    user_line_extension_row = user_line_extension.to_data_source(ULESchema)
+    user_line_extension_row = db_converter.to_source(user_line_extension)
     session.begin()
     session.add(user_line_extension_row)
 
@@ -97,21 +103,16 @@ def create(session, user_line_extension):
 
 @daosession
 def edit(session, user_line_extension):
-    session.begin()
-    nb_row_affected = (session.query(ULESchema)
-                       .filter(ULESchema.id == user_line_extension.id)
-                       .update(user_line_extension.to_data_dict()))
+    ule_row = _get_ule_row(session, user_line_extension.id)
+    db_converter.update_source(ule_row, user_line_extension)
 
+    session.begin()
+    session.add(ule_row)
     try:
         session.commit()
     except SQLAlchemyError as e:
         session.rollback()
         raise ElementEditionError('UserLineExtension', e)
-
-    if nb_row_affected == 0:
-        raise ElementEditionError('UserLineExtension', 'user_line_extension_id %s not exsit' % user_line_extension.id)
-
-    return nb_row_affected
 
 
 @daosession
@@ -147,7 +148,3 @@ def main_user_is_allowed_to_delete(session, main_line_id):
              .count())
 
     return count == 1
-
-
-def _new_query(session):
-    return session.query(ULESchema)
