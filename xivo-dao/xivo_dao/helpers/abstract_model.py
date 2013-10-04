@@ -40,14 +40,9 @@ class AbstractModels(object):
         if len(invalid) > 0:
             raise InvalidParametersError(invalid)
 
-        for model_field in self.FIELDS:
-            model_field_value = data.get(model_field)
-            if model_field_value is not None:
-                setattr(self, model_field, model_field_value)
-        for model_field in self._RELATION.itervalues():
-            model_field_value = data.get(model_field)
-            if model_field_value is not None:
-                setattr(self, model_field, model_field_value)
+        for model_field in self.FIELDS + self._RELATION.values():
+            model_field_value = data.get(model_field, None)
+            setattr(self, model_field, model_field_value)
 
     @classmethod
     def from_user_data(cls, properties):

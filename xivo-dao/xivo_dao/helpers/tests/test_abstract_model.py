@@ -89,9 +89,8 @@ class TestModelsAbstract(unittest.TestCase):
 
         assert_that(user_data, has_entries({
             'field1': 'value1',
+            'field2': None,
         }))
-
-        assert_that(user_data, is_not(has_key('field2')))
 
     def test_invalid_parameters(self):
         self.assertRaises(InvalidParametersError, TestModel, blabla='HOWDY')
