@@ -27,7 +27,7 @@ from xivo_dao.alchemy.dialaction import Dialaction
 from xivo_dao.alchemy.phonefunckey import PhoneFunckey
 from xivo_dao.alchemy.schedulepath import SchedulePath
 from xivo_dao.helpers.db_manager import daosession
-from xivo_dao.data_handler.user.model import User, UserOrdering, db_converter
+from xivo_dao.data_handler.user.model import UserOrdering, db_converter
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementEditionError, ElementCreationError, ElementDeletionError
 from sqlalchemy.sql.expression import and_
@@ -87,7 +87,6 @@ def find_user(session, firstname, lastname):
 @daosession
 def get(session, user_id):
     user_row = _fetch_user_row(session, user_id)
-    print "user_row", user_row
     return db_converter.to_model(user_row)
 
 
@@ -157,7 +156,6 @@ def get_by_number_context(session, number, context):
 @daosession
 def create(session, user):
     user_row = db_converter.to_source(user)
-    print user_row
     session.begin()
     session.add(user_row)
 

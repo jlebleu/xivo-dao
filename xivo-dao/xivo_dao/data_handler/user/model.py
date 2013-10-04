@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-from xivo_dao.helpers.abstract_model import AbstractModels, Ordering
+from xivo_dao.helpers.abstract_model import AbstractModels
 from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 
