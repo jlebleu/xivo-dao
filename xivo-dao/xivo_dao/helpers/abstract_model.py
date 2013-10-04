@@ -33,43 +33,6 @@ class AbstractModels(object):
     def __ne__(self, other):
         return not self == other
 
-    @classmethod
-    def from_data_source(cls, db_object):
-        obj = cls()
-        for db_field, model_field in obj._MAPPING.iteritems():
-            if hasattr(db_object, db_field):
-                model_field_value = getattr(db_object, db_field)
-                setattr(obj, model_field, model_field_value)
-        for db_field, model_field in obj._RELATION.iteritems():
-            if hasattr(db_object, db_field):
-                model_field_value = getattr(db_object, db_field)
-                setattr(obj, model_field, model_field_value)
-        return obj
-
-    def update_from_data_source(self, db_object):
-        for db_field, model_field in self._MAPPING.iteritems():
-            if hasattr(db_object, db_field):
-                if db_field == 'id':
-                    continue
-                model_field_value = getattr(db_object, db_field)
-                setattr(self, model_field, model_field_value)
-
-    def to_data_source(self, class_schema):
-        db_object = class_schema()
-        for db_field, model_field in self._MAPPING.iteritems():
-            if hasattr(self, model_field):
-                field_value = getattr(self, model_field)
-                setattr(db_object, db_field, field_value)
-        return db_object
-
-    def update_data_source(self, db_object):
-        for db_field, model_field in self._MAPPING.iteritems():
-            if hasattr(self, model_field):
-                if db_field == 'id':
-                    continue
-                model_field_value = getattr(self, model_field)
-                setattr(db_object, db_field, model_field_value)
-
     def update_from_data(self, data):
         parameters = data.keys()
         invalid = self.invalid_parameters(parameters)
@@ -77,7 +40,7 @@ class AbstractModels(object):
         if len(invalid) > 0:
             raise InvalidParametersError(invalid)
 
-        for model_field in self._MAPPING.itervalues():
+        for model_field in self.FIELDS:
             model_field_value = data.get(model_field)
             if model_field_value is not None:
                 setattr(self, model_field, model_field_value)
@@ -86,21 +49,13 @@ class AbstractModels(object):
             if model_field_value is not None:
                 setattr(self, model_field, model_field_value)
 
-    def to_data_dict(self):
-        data_dict = {}
-        for db_field, model_field in self._MAPPING.iteritems():
-            if hasattr(self, model_field):
-                field_value = getattr(self, model_field)
-                data_dict[db_field] = field_value
-        return data_dict
-
     @classmethod
     def from_user_data(cls, properties):
         return cls(**properties)
 
     def to_user_data(self):
         data_dict = {}
-        for model_field in self._MAPPING.values():
+        for model_field in self.FIELDS:
             if hasattr(self, model_field):
                 field_value = getattr(self, model_field)
                 data_dict[model_field] = field_value
@@ -108,7 +63,7 @@ class AbstractModels(object):
         return data_dict
 
     def invalid_parameters(self, parameters):
-        allowed = self._MAPPING.values() + self._RELATION.values()
+        allowed = self.FIELDS + self._RELATION.values()
         return set(parameters).difference(set(allowed))
 
     def missing_parameters(self):

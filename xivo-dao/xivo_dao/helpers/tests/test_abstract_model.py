@@ -17,174 +17,87 @@
 
 import unittest
 
-from hamcrest import all_of, assert_that, has_entries, has_key, is_not
+from hamcrest import *
 from hamcrest.core import equal_to
-from mock import Mock
+from xivo_dao.helpers.abstract_model import AbstractModels
 from xivo_dao.data_handler.exception import InvalidParametersError
-from xivo_dao.data_handler.user.model import User
-from xivo_dao.data_handler.line.model import Line, LineSIP
-from xivo_dao.data_handler.voicemail.model import Voicemail
+
+
+class TestModel(AbstractModels):
+
+    _RELATION = {}
+
+    MANDATORY = [
+        'field1'
+    ]
+
+    FIELDS = [
+        'field1',
+        'field2',
+    ]
 
 
 class TestModelsAbstract(unittest.TestCase):
 
     def test_instance_of_new_class(self):
-        firstname = 'toto'
-        lastname = 'kiki'
-        language = 'fr_FR'
-        user = User(firstname=firstname,
-                    lastname=lastname,
-                    language=language)
+        value1 = 'value1'
+        value2 = 'value2'
+        model = TestModel(field1=value1, field2=value2)
 
-        assert_that(user.firstname, equal_to(firstname))
-        assert_that(user.lastname, equal_to(lastname))
-        assert_that(user.language, equal_to(language))
+        assert_that(model, all_of(
+            has_property('field1', value1),
+            has_property('field2', value2)
+        ))
 
     def test_equal_type_mismatch(self):
-        line_1 = Line(
-            name='test',
-        )
+        model1 = TestModel(field1='a')
+        astring = "a string"
 
-        self.assertRaises(TypeError, lambda: line_1 == 'Not a line')
+        self.assertRaises(TypeError, lambda: model1 == astring)
 
     def test_equal_same(self):
-        name = 'samename'
-        line_1 = Line(name=name)
-        line_2 = Line(name=name)
+        model1 = TestModel(field1='a', field2='b')
+        model2 = TestModel(field1='a', field2='b')
 
-        assert_that(line_1, equal_to(line_2))
+        assert_that(model1, equal_to(model2))
 
-    def test_equal(self):
-        user_1 = Mock()
-        user_2 = Mock()
-        voicemail_1 = Voicemail(
-            name='abc def',
-            number='42',
-            context='context 42',
-            id=42,
-            user=user_1
-        )
+    def test_not_equal(self):
+        model1 = TestModel(field1='a', field2='a')
+        model2 = TestModel(field1='a', field2='b')
+        model3 = TestModel(field1='b', field2='b')
 
-        voicemail_2 = Voicemail(
-            name='abc defg',
-            number='43',
-            context='context 43',
-            id=43,
-            user=user_2
-        )
-
-        voicemail_clone_1 = Voicemail(
-            name='abc def',
-            number='42',
-            context='context 42',
-            id=42,
-            user=user_1
-        )
-
-        self.assertRaises(TypeError, lambda: voicemail_1 == 12)
-        self.assertNotEquals(voicemail_1, Voicemail())
-        self.assertEquals(voicemail_1, voicemail_1)
-        self.assertNotEquals(voicemail_1, voicemail_2)
-        self.assertEquals(voicemail_1, voicemail_clone_1)
-
-    def test_from_data_source(self):
-        properties = Mock()
-        properties.id = user_id = 42
-        properties.firstname = firstname = 'Moi'
-        properties.lastname = lastname = 'Lastname'
-        properties.callerid = callerid = '"Moi Lastnane" <123>'
-        properties.outcallerid = outcallerid = 'default'
-        properties.loginclient = username = 'username'
-        properties.passwdclient = password = 'password'
-        properties.mobilephonenumber = mobilephonenumber = '12345678'
-        properties.language = language = 'fr_FR'
-        properties.timezone = timezone = 'America/Montreal'
-        properties.userfield = userfield = 'cp123yyx'
-
-        user = User.from_data_source(properties)
-
-        assert_that(user.id, equal_to(user_id))
-        assert_that(user.firstname, equal_to(firstname))
-        assert_that(user.lastname, equal_to(lastname))
-        assert_that(user.callerid, equal_to(callerid))
-        assert_that(user.username, equal_to(username))
-        assert_that(user.password, equal_to(password))
-        assert_that(user.outcallerid, equal_to(outcallerid))
-        assert_that(user.mobilephonenumber, equal_to(mobilephonenumber))
-        assert_that(user.language, equal_to(language))
-        assert_that(user.timezone, equal_to(timezone))
-        assert_that(user.userfield, equal_to(userfield))
-
-    def test_to_data_source(self):
-        user_id = 56984
-        firstname = 'toto'
-        lastname = 'kiki'
-        language = 'fr_FR'
-
-        user = User(id=user_id,
-                    firstname=firstname,
-                    lastname=lastname,
-                    language=language)
-
-        assert_that(user.id, equal_to(user_id))
-        assert_that(user.firstname, equal_to(firstname))
-        assert_that(user.lastname, equal_to(lastname))
-        assert_that(user.language, equal_to(language))
+        self.assertNotEquals(model1, model2)
+        self.assertNotEquals(model1, model3)
+        self.assertNotEquals(model2, model3)
 
     def test_from_user_data(self):
-        voicemail_id = 1
-        name = 'voicemail name'
-        number = '42'
-        context = 'default'
-        properties = {
-            'id': voicemail_id,
-            'name': name,
-            'number': number,
-            'context': context,
+        user_data = {
+            'field1': 'value1',
+            'field2': 'value2'
         }
 
-        voicemail = Voicemail.from_user_data(properties)
+        model1 = TestModel.from_user_data(user_data)
 
-        self.assertEquals(voicemail_id, voicemail.id)
-        self.assertEquals(name, voicemail.name)
-        self.assertEquals(number, voicemail.number)
-        self.assertEquals(context, voicemail.context)
+        assert_that(model1, all_of(
+            has_property('field1', 'value1'),
+            has_property('field2', 'value2')
+        ))
 
     def test_to_user_data(self):
-        line_sip = LineSIP()
-        line_sip.private_value = 'private_value'
-        provisioning_extension = line_sip.provisioning_extension = '192837'
-        username = line_sip.username = 'username'
+        model = TestModel(field1='value1')
+        user_data = model.to_user_data()
 
-        line_sip_dict = line_sip.to_user_data()
-
-        assert_that(line_sip_dict, has_entries({
-            'provisioning_extension': provisioning_extension,
-            'username': username,
+        assert_that(user_data, has_entries({
+            'field1': 'value1',
         }))
-        assert_that(line_sip_dict, all_of(is_not(has_key('private_value')),  # not mapped
-                                          is_not(has_key('secret'))))  # not set
 
-    def test_update_from_data(self):
-        expected_lastname = 'Toi'
-        user = User()
-        user.id = 42
-        user.firstname = 'Moi'
-        user.lastname = 'Lastname'
+        assert_that(user_data, is_not(has_key('field2')))
 
-        data_update = {
-            'lastname': expected_lastname
-        }
+    def test_invalid_parameters(self):
+        self.assertRaises(InvalidParametersError, TestModel, blabla='HOWDY')
 
-        user.update_from_data(data_update)
+    def test_missing_parameters(self):
+        model = TestModel(field2='value2')
+        missing = model.missing_parameters()
 
-        assert_that(user.lastname, equal_to(expected_lastname))
-
-    def test_update_from_data_invalid_properties(self):
-        user = User()
-
-        data_update = {
-            'toto': 'tata'
-        }
-
-        self.assertRaises(InvalidParametersError, user.update_from_data, data_update)
+        assert_that(missing, has_length(1))
