@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from xivo_dao.alchemy.call_log import CallLog as CallLogSchema
+from xivo_dao.converters.database_converter import DatabaseConverter
 from xivo_dao.helpers.abstract_model import AbstractModels
 
 
@@ -24,18 +26,17 @@ class CallLog(AbstractModels):
         'duration',
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'id': 'id',
-        'date': 'date',
-        'source_name': 'source_name',
-        'source_exten': 'source_exten',
-        'destination_name': 'destination_name',
-        'destination_exten': 'destination_exten',
-        'user_field': 'user_field',
-        'answered': 'answered',
-        'duration': 'duration',
-    }
+    FIELDS = [
+        'id',
+        'date',
+        'source_name',
+        'source_exten',
+        'destination_name',
+        'destination_exten',
+        'user_field',
+        'answered',
+        'duration',
+    ]
 
     _RELATION = {
     }
@@ -49,3 +50,19 @@ class CallLog(AbstractModels):
 
     def add_related_cels(self, cel_ids):
         self._related_cels.extend(cel_ids)
+
+
+DB_TO_MODEL_MAPPING = {
+    'id': 'id',
+    'date': 'date',
+    'source_name': 'source_name',
+    'source_exten': 'source_exten',
+    'destination_name': 'destination_name',
+    'destination_exten': 'destination_exten',
+    'user_field': 'user_field',
+    'answered': 'answered',
+    'duration': 'duration',
+}
+
+
+db_converter = DatabaseConverter(DB_TO_MODEL_MAPPING, CallLogSchema, CallLog)
