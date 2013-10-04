@@ -105,6 +105,9 @@ class User(AbstractModels):
         return '"%s"' % self.fullname
 
 
-UserOrdering = Ordering(['firstname', 'lastname'])
+class UserOrdering(object):
+    firstname = 'firstname'
+    lastname = 'lastname'
+
 
 db_converter = UserDbConverter()
