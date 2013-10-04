@@ -38,20 +38,19 @@ class Device(AbstractModels):
         'description'
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'id': 'id',
-        'ip': 'ip',
-        'mac': 'mac',
-        'sn': 'sn',
-        'plugin': 'plugin',
-        'vendor': 'vendor',
-        'model': 'model',
-        'version': 'version',
-        'description': 'description',
-        'status': 'status',
-        'template_id': 'template_id'
-    }
+    FIELDS = [
+        'id',
+        'ip',
+        'mac',
+        'sn',
+        'plugin',
+        'vendor',
+        'model',
+        'version',
+        'description',
+        'status',
+        'template_id',
+    ]
 
     _RELATION = {}
 
@@ -67,7 +66,7 @@ class Device(AbstractModels):
             if 'configdevice' in config:
                 obj.template_id = config['configdevice']
 
-            if device['configured'] == True:
+            if device['configured'] is True:
                 if device['config'].startswith('autoprov'):
                     obj.status = 'autoprov'
                 else:
