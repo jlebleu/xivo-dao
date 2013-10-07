@@ -44,9 +44,9 @@ def find_all(session):
 @daosession
 def get_by_number_context(session, number, context):
     row = (session.query(VoicemailSchema)
-                 .filter(VoicemailSchema.mailbox == number)
-                 .filter(VoicemailSchema.context == context)
-                 .first())
+           .filter(VoicemailSchema.mailbox == number)
+           .filter(VoicemailSchema.context == context)
+           .first())
     if not row:
         raise ElementNotExistsError('Voicemail', number=number, context=context)
 
@@ -61,8 +61,9 @@ def get(session, voicemail_id):
 
 def _get_voicemail_row(session, voicemail_id):
     row = (session.query(VoicemailSchema)
-                 .filter(VoicemailSchema.uniqueid == voicemail_id)
-                 .first())
+           .filter(VoicemailSchema.uniqueid == voicemail_id)
+           .first())
+
     if not row:
         raise ElementNotExistsError('Voicemail', uniqueid=voicemail_id)
 
