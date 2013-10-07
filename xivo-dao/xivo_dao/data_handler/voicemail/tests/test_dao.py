@@ -177,7 +177,7 @@ class TestVoicemailDeleteSIP(DAOTestCase):
 
     @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
     def test_delete_from_sip_user(self, delete_voicemail_storage):
-        voicemail = Mock(voicemail_dao.Voicemail)
+        voicemail = Mock(Voicemail)
         voicemail.number = '42'
         voicemail.context = 'default'
         voicemail.number_at_context = '42@default'
@@ -199,7 +199,7 @@ class TestVoicemailDeleteSIP(DAOTestCase):
         session.commit.side_effect = SQLAlchemyError()
         Session.return_value = session
 
-        voicemail = Mock(voicemail_dao.Voicemail)
+        voicemail = Mock(Voicemail)
         voicemail.number = '42'
         voicemail.context = 'default'
         voicemail.number_at_context = '42@default'
@@ -270,7 +270,7 @@ class TestVoicemailDeleteSCCP(DAOTestCase):
 
     @patch('xivo_dao.helpers.sysconfd_connector.delete_voicemail_storage')
     def test_delete_from_sccp_user(self, delete_voicemail_storage):
-        voicemail = Mock(voicemail_dao.Voicemail)
+        voicemail = Mock(Voicemail)
         voicemail.number = '42'
         voicemail.context = 'default'
         voicemail.number_at_context = '42@default'

@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from xivo_dao.helpers.abstract_model import AbstractModels
+from xivo_dao.converters.database_converter import DatabaseConverter
+from xivo_dao.alchemy.voicemail import Voicemail as VoicemailSchema
 
 
 class Voicemail(AbstractModels):
@@ -26,13 +28,12 @@ class Voicemail(AbstractModels):
         'context'
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'uniqueid': 'id',
-        'fullname': 'name',
-        'mailbox': 'number',
-        'context': 'context'
-    }
+    FIELDS = [
+        'id',
+        'name',
+        'number',
+        'context'
+    ]
 
     _RELATION = {
         'user': 'user'
@@ -44,3 +45,13 @@ class Voicemail(AbstractModels):
     @property
     def number_at_context(self):
         return '%s@%s' % (self.number, self.context)
+
+
+DB_TO_MODEL_MAPPING = {
+    'uniqueid': 'id',
+    'fullname': 'name',
+    'mailbox': 'number',
+    'context': 'context'
+}
+
+db_converter = DatabaseConverter(DB_TO_MODEL_MAPPING, VoicemailSchema, Voicemail)
