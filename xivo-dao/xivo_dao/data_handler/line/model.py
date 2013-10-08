@@ -63,62 +63,23 @@ class LineOrdering(object):
 class LineSIPDBConverter(object):
 
     def __init__(self):
-        pass
+        self.line_converter = DatabaseConverter(self.LINE_TO_MODEL, LineSchema, LineSIP)
+        self.protocol_converter = DatabaseConverter(self.PROTOCOL_TO_MODEL, UserSIPSchema, LineSIP)
 
     def to_model(self, line_row, protocol_row):
-        model = LineSIP()
-        self._map_line_columns(model, line_row)
-        self._map_protocol_columns(model, protocol_row)
+        model = self.line_converter.to_model(line_row)
+        self.protocol_converter.update_model(model, protocol_row)
         return model
 
-    def _map_line_columns(self, model, line_row):
-        model.id = line_row.id
-        model.number = line_row.number
-        model.context = line_row.context
-        model.protocol = line_row.protocol
-        model.device = line_row.device
-        model.provisioning_extension = line_row.provisioningid
-        model.configregistrar = line_row.configregistrar
-        model.device_slot = line_row.num
-
-    def _map_protocol_columns(self, model, protocol_row):
-        model.username = protocol_row.name
-        model.secret = protocol_row.secret
-        model.protocolid = protocol_row.id
-        model.callerid = protocol_row.callerid
-
     def to_source(self, model):
-        line_row = self._build_line_row(model)
-        protocol_row = self._build_protocol_row(model)
-
-        return line_row, protocol_row
-
-    def _build_line_row(self, model):
-        line_row = LineSchema()
-        line_row.id = model.id
-        line_row.name = model.username
-        line_row.number = model.number
-        line_row.context = model.context
+        line_row = self.line_converter.to_source(model)
         line_row.protocol = 'sip'
-        line_row.device = model.device
-        line_row.provisioningid = model.provisioning_extension
-        line_row.configregistrar = model.configregistrar
-        line_row.num = model.device_slot
-
-        return line_row
-
-    def _build_protocol_row(self, model):
-        protocol_row = UserSIPSchema()
-        protocol_row.id = model.protocolid
-        protocol_row.name = model.username
-        protocol_row.secret = model.secret
-        protocol_row.context = model.context
-        protocol_row.callerid = model.callerid
+        protocol_row = self.protocol_converter.to_source(model)
         protocol_row.username = ''
         protocol_row.type = 'friend'
         protocol_row.category = 'user'
 
-        return protocol_row
+        return line_row, protocol_row
 
     LINE_TO_MODEL = {
         'id': 'id',
@@ -142,11 +103,8 @@ class LineSIPDBConverter(object):
     }
 
     def update_source(self, line_row, protocol_row, model):
-        line_converter = DatabaseConverter(self.LINE_TO_MODEL, LineSIP, LineSchema)
-        protocol_converter = DatabaseConverter(self.PROTOCOL_TO_MODEL, LineSIP, UserSIPSchema)
-
-        line_converter.update_source(line_row, model)
-        protocol_converter.update_source(protocol_row, model)
+        self.line_converter.update_source(line_row, model)
+        self.protocol_converter.update_source(protocol_row, model)
 
 
 db_converter = LineSIPDBConverter()
