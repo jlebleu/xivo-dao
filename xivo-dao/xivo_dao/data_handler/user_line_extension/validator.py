@@ -39,7 +39,7 @@ def validate(ule):
 
 
 def is_allowed_to_delete(ule):
-    if ule.main_user == True and not ule_dao.main_user_is_allowed_to_delete(ule.line_id):
+    if ule.main_user is True and not ule_dao.main_user_is_allowed_to_delete(ule.line_id):
         raise InvalidParametersError(['There are secondary users associated to this link'])
 
 

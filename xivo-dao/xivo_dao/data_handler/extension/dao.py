@@ -138,7 +138,7 @@ def create(session, extension):
 
 @daosession
 def edit(session, extension):
-    extension_row = _get_extension_row(extension.id)
+    extension_row = _get_extension_row(session, extension.id)
     db_converter.update_source(extension_row, extension)
 
     session.begin()
