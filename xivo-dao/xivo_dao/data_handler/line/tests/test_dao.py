@@ -415,10 +415,10 @@ class TestLineDao(DAOTestCase):
         assert_that(result, equal_to(False))
 
     def test_edit(self):
-        username = 'toto'
-        secret = 'kiki'
-        expected_name = 'huhu'
-        expected_context = 'popo'
+        username = 'username_before'
+        secret = 'secret_before'
+        expected_name = 'username_after'
+        expected_context = 'context_after'
         line_sip = self.add_usersip(name=username,
                                     username=username,
                                     secret=secret)
