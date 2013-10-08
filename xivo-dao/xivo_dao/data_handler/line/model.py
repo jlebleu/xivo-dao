@@ -17,9 +17,11 @@
 
 from xivo_dao.helpers.abstract_model import AbstractModels
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
+from xivo_dao.converters.database_converter import DatabaseConverter
 
 
-class Line(AbstractModels):
+class LineSIP(AbstractModels):
 
     MANDATORY = [
         'context',
@@ -27,29 +29,30 @@ class Line(AbstractModels):
         'device_slot'
     ]
 
-    # mapping = {db_field: model_field}
-    _MAPPING = {
-        'id': 'id',
-        'name': 'name',
-        'number': 'number',
-        'context': 'context',
-        'protocol': 'protocol',
-        'protocolid': 'protocolid',
-        'callerid': 'callerid',
-        'device': 'device',
-        'provisioningid': 'provisioning_extension',
-        'configregistrar': 'configregistrar',
-        'num': 'device_slot'
-    }
+    FIELDS = [
+        'id',
+        'number',
+        'context',
+        'protocol',
+        'protocolid',
+        'callerid',
+        'device',
+        'provisioning_extension',
+        'configregistrar',
+        'device_slot',
+        'username',
+        'secret'
+    ]
 
     _RELATION = {}
-
-    def __init__(self, *args, **kwargs):
-        AbstractModels.__init__(self, *args, **kwargs)
 
     @property
     def interface(self):
         return '%s/%s' % (self.protocol.upper(), self.name)
+
+    def __init__(self, *args, **kwargs):
+        AbstractModels.__init__(self, *args, **kwargs)
+        self.protocol = 'sip'
 
 
 class LineOrdering(object):
@@ -57,78 +60,93 @@ class LineOrdering(object):
         context = LineSchema.context
 
 
-class LineSIP(Line):
+class LineSIPDBConverter(object):
 
-    # mapping = {db_field: model_field}
-    _MAPPING = dict(Line._MAPPING.items() + {
+    def __init__(self):
+        pass
+
+    def to_model(self, line_row, protocol_row):
+        model = LineSIP()
+        self._map_line_columns(model, line_row)
+        self._map_protocol_columns(model, protocol_row)
+        return model
+
+    def _map_line_columns(self, model, line_row):
+        model.id = line_row.id
+        model.number = line_row.number
+        model.context = line_row.context
+        model.protocol = line_row.protocol
+        model.device = line_row.device
+        model.provisioning_extension = line_row.provisioningid
+        model.configregistrar = line_row.configregistrar
+        model.device_slot = line_row.num
+
+    def _map_protocol_columns(self, model, protocol_row):
+        model.username = protocol_row.name
+        model.secret = protocol_row.secret
+        model.protocolid = protocol_row.id
+        model.callerid = protocol_row.callerid
+
+    def to_source(self, model):
+        line_row = self._build_line_row(model)
+        protocol_row = self._build_protocol_row(model)
+
+        return line_row, protocol_row
+
+    def _build_line_row(self, model):
+        line_row = LineSchema()
+        line_row.id = model.id
+        line_row.name = model.username
+        line_row.number = model.number
+        line_row.context = model.context
+        line_row.protocol = 'sip'
+        line_row.device = model.device
+        line_row.provisioningid = model.provisioning_extension
+        line_row.configregistrar = model.configregistrar
+        line_row.num = model.device_slot
+
+        return line_row
+
+    def _build_protocol_row(self, model):
+        protocol_row = UserSIPSchema()
+        protocol_row.id = model.protocolid
+        protocol_row.name = model.username
+        protocol_row.secret = model.secret
+        protocol_row.context = model.context
+        protocol_row.callerid = model.callerid
+        protocol_row.username = ''
+        protocol_row.type = 'friend'
+        protocol_row.category = 'user'
+
+        return protocol_row
+
+    MODEL_TO_LINE = {
+        'id': 'id',
+        'username': 'name',
+        'number': 'number',
+        'context': 'context',
+        'protocol': 'protocol',
+        'protocolid': 'protocolid',
+        'device': 'device',
+        'configregistrar': 'configregistrar',
+        'provisioning_extension': 'provisioningid',
+        'device_slot': 'num',
+    }
+
+    MODEL_TO_PROTOCOL = {
+        'protocolid': 'id',
+        'context': 'context',
+        'callerid': 'callerid',
         'username': 'username',
         'secret': 'secret'
-    }.items())
+    }
 
-    def __init__(self, *args, **kwargs):
-        Line.__init__(self, *args, **kwargs)
-        self.protocol = 'sip'
+    def update_source(self, line_row, protocol_row, model):
+        line_converter = DatabaseConverter(self.MODEL_TO_LINE, LineSIP, LineSchema)
+        protocol_converter = DatabaseConverter(self.MODEL_TO_PROTOCOL, LineSIP, UserSIPSchema)
 
-    @classmethod
-    def from_data_source(cls, db_object):
-        obj = super(LineSIP, cls).from_data_source(db_object)
-        if hasattr(obj, 'name'):
-            obj.username = db_object.name
-        return obj
-
-    def to_data_source(self, class_schema):
-        obj = AbstractModels.to_data_source(self, class_schema)
-        if hasattr(self, 'username'):
-            obj.name = self.username
-        del obj.username
-        return obj
-
-    def to_data_dict(self):
-        data_dict = AbstractModels.to_data_dict(self)
-        if hasattr(self, 'username'):
-            data_dict['name'] = self.username
-        del data_dict['username']
-        return data_dict
-
-    def update_from_data(self, data_dict):
-        AbstractModels.update_from_data(self, data_dict)
-        if 'name' in data_dict:
-            self.username = data_dict['name']
-
-    def update_from_data_source(self, db_object):
-        AbstractModels.update_from_data_source(self, db_object)
-        if hasattr(db_object, 'name'):
-            self.username = db_object.name
-
-    def update_data_source(self, db_object):
-        AbstractModels.update_data_source(self, db_object)
-        if hasattr(self, 'username'):
-            setattr(db_object, 'name', self.username)
-        setattr(db_object, 'username', '')
+        line_converter.update_source(line_row, model)
+        protocol_converter.update_source(protocol_row, model)
 
 
-class LineIAX(Line):
-
-    # mapping = {db_field: model_field}
-    _MAPPING = dict(Line._MAPPING.items() + {
-        'username': 'username',
-        'secret': 'secret'
-    }.items())
-
-    def __init__(self, *args, **kwargs):
-        Line.__init__(self, *args, **kwargs)
-        self.protocol = 'iax'
-
-
-class LineSCCP(Line):
-
-    def __init__(self, *args, **kwargs):
-        Line.__init__(self, *args, **kwargs)
-        self.protocol = 'sccp'
-
-
-class LineCUSTOM(Line):
-
-    def __init__(self, *args, **kwargs):
-        Line.__init__(self, *args, **kwargs)
-        self.protocol = 'custom'
+db_converter = LineSIPDBConverter()

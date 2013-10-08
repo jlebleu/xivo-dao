@@ -24,6 +24,7 @@ from xivo_dao.data_handler.exception import MissingParametersError, InvalidParam
 from xivo_dao.data_handler.device import services as device_services
 from xivo_dao.data_handler.device import dao as device_dao
 from xivo_dao.data_handler.context import services as context_services
+from xivo_dao.data_handler.line.model import LineSIP
 from xivo import caller_id
 
 
@@ -57,10 +58,28 @@ def find_all_by_device_id(name):
 
 def create(line):
     _validate(line)
-    line.provisioning_extension = make_provisioning_id()
-    line = dao.create(line)
+    _create_line(line)
     notifier.created(line)
     return line
+
+
+def _create_line(line):
+    if isinstance(line, LineSIP):
+        _create_line_sip(line)
+    else:
+        raise NotImplementedError("Only SIP Lines can be created for the moment")
+
+
+def _create_line_sip(line):
+    if not line.provisioning_extension:
+        line.provisioning_extension = make_provisioning_id()
+    if not line.username:
+        line.username = dao.generate_username()
+    if not line.secret:
+        line.secret = dao.generate_secret()
+    if not line.configregistrar:
+        line.configregistrar = 'default'
+    dao.create(line)
 
 
 def edit(line):

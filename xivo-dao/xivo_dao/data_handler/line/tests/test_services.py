@@ -4,7 +4,7 @@ import unittest
 
 from mock import patch, Mock
 
-from xivo_dao.data_handler.line.model import LineSIP, LineOrdering, Line
+from xivo_dao.data_handler.line.model import LineSIP, LineOrdering
 from xivo_dao.data_handler.line import services as line_services
 from xivo_dao.data_handler.exception import MissingParametersError, \
     ElementCreationError, ElementNotExistsError, InvalidParametersError, \
@@ -72,8 +72,8 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all')
     def test_find_all(self, line_dao_find_all):
-        first_line = Mock(Line)
-        second_line = Mock(Line)
+        first_line = Mock(LineSIP)
+        second_line = Mock(LineSIP)
         expected_order = None
 
         expected = [first_line, second_line]
@@ -88,8 +88,8 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all')
     def test_find_all_order_by_name(self, line_dao_find_all):
-        first_line = Mock(Line)
-        second_line = Mock(Line)
+        first_line = Mock(LineSIP)
+        second_line = Mock(LineSIP)
         expected_order = [LineOrdering.name]
 
         expected = [first_line, second_line]
@@ -104,7 +104,7 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
     def test_find_all_by_name(self, line_dao_find_all_by_name):
-        expected_result = [Mock(Line)]
+        expected_result = [Mock(LineSIP)]
         name = 'Lord'
 
         line_dao_find_all_by_name.return_value = expected_result
@@ -128,7 +128,7 @@ class TestLineServices(unittest.TestCase):
 
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
     def test_find_all_by_device_id(self, line_dao_find_all_by_device_id):
-        expected_result = [Mock(Line)]
+        expected_result = [Mock(LineSIP)]
         device_id = '222'
 
         line_dao_find_all_by_device_id.return_value = expected_result

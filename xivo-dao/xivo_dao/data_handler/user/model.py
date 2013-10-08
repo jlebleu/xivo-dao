@@ -92,12 +92,12 @@ class User(AbstractModels):
 
     @property
     def fullname(self):
-        if not hasattr(self, 'lastname'):
+        if not self.lastname:
             self.lastname = ''
         return ' '.join([self.firstname, self.lastname])
 
     def determine_callerid(self):
-        if hasattr(self, 'callerid'):
+        if not self.lastname:
             return self.callerid
         return self._generate_callerid()
 

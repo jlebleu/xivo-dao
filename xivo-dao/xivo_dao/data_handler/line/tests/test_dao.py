@@ -28,11 +28,7 @@ from xivo_dao.data_handler.extension import dao as extension_dao
 from xivo_dao.tests.test_dao import DAOTestCase
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
-from xivo_dao.alchemy.useriax import UserIAX as UserIAXSchema
-from xivo_dao.alchemy.usercustom import UserCustom as UserCustomSchema
-from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
-from xivo_dao.data_handler.line.model import LineSIP, LineSCCP, LineIAX, LineCUSTOM, \
-    LineOrdering
+from xivo_dao.data_handler.line.model import LineSIP, LineOrdering
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementCreationError, ElementDeletionError, ElementEditionError
 from sqlalchemy.exc import SQLAlchemyError
@@ -52,40 +48,21 @@ class TestLineDao(DAOTestCase):
         LineSchema,
         UserLine,
         UserSIPSchema,
-        UserIAXSchema,
-        UserCustomSchema,
-        SCCPLineSchema
     ]
 
     def setUp(self):
         self.empty_tables()
 
     def test_get(self):
-        line_name = 'sdklfj'
+        line_username = 'sdklfj'
 
-        line_sip = self.add_usersip(name=line_name)
+        line_sip = self.add_usersip(name=line_username)
         line = self.add_line(protocolid=line_sip.id,
-                             name=line_name)
+                             name=line_username)
 
         line = line_dao.get(line.id)
 
-        assert_that(line.name, equal_to(line_name))
-
-    def test_get_custom_line(self):
-        line_interface = '123456789'
-        line_name = 'custom/abcd'
-
-        line_custom = self.add_usercustom(interface=line_interface,
-                                          protocol='custom',
-                                          context='default',
-                                          category='user',
-                                          commented=0)
-
-        line = self.add_line(protocol='custom', protocolid=line_custom.id, name=line_name)
-
-        line = line_dao.get(line.id)
-
-        assert_that(line.name, equal_to(line_interface))
+        assert_that(line.username, equal_to(line_username))
 
     def test_get_no_line(self):
         self.assertRaises(ElementNotExistsError, line_dao.get, 666)
@@ -101,7 +78,7 @@ class TestLineDao(DAOTestCase):
 
         line = line_dao.get_by_user_id(user_line.user.id)
 
-        assert_that(line.name, equal_to(line_name))
+        assert_that(line.username, equal_to(line_name))
 
     def test_get_by_user_id_no_user(self):
         self.assertRaises(ElementNotExistsError, line_dao.get_by_user_id, 666)
@@ -132,7 +109,7 @@ class TestLineDao(DAOTestCase):
 
         line = line_dao.get_by_number_context(exten, context)
 
-        assert_that(line.name, equal_to(line_name))
+        assert_that(line.username, equal_to(line_name))
         assert_that(line.number, equal_to(exten))
         assert_that(line.context, equal_to(context))
 
@@ -450,7 +427,6 @@ class TestLineDao(DAOTestCase):
                              context=line_sip.context)
 
         expected_line = line_dao.get(line.id)
-        expected_line.name = expected_name
         expected_line.username = expected_name
         expected_line.context = expected_context
 
@@ -573,13 +549,14 @@ class TestLineDao(DAOTestCase):
         assert_that(generated_hash, has_length(8))
 
     def test_create_sip_line_with_no_extension(self):
-        line = LineSIP(protocol='sip',
+        line = LineSIP(username='toto',
+                       protocol='sip',
                        context='default',
                        provisioning_extension=123456)
 
         line_created = line_dao.create(line)
 
-        assert_that(line_created, is_not(has_property('number')))
+        assert_that(line_created, has_property('number', None))
 
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_sip_line_with_error_from_dao(self, Session):
@@ -591,8 +568,7 @@ class TestLineDao(DAOTestCase):
         context = 'toto'
         secret = '1234'
 
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret)
 
@@ -601,14 +577,18 @@ class TestLineDao(DAOTestCase):
         session.rollback.assert_called_once_with()
 
     def test_create_sip_line(self):
-        line = LineSIP(context='default',
+        line = LineSIP(username='abcd',
+                       context='default',
                        provisioning_extension=123456)
 
         line_created = line_dao.create(line)
+        print line_created.id
+        print line_created.protocolid
 
         result_protocol = (self.session.query(UserSIPSchema)
                            .filter(UserSIPSchema.id == line_created.protocolid)
                            .first())
+
         result_line = (self.session.query(LineSchema)
                        .filter(LineSchema.id == line_created.id)
                        .first())
@@ -622,24 +602,6 @@ class TestLineDao(DAOTestCase):
 
         assert_that(result_protocol, has_property('type', 'friend'))
 
-    def test_create_sccp_not_implemented(self):
-        line = LineSCCP(context='default',
-                        number='1000')
-
-        self.assertRaises(NotImplementedError, line_dao.create, line)
-
-    def test_create_iax_not_implemented(self):
-        line = LineIAX(context='default',
-                       number='1000')
-
-        self.assertRaises(NotImplementedError, line_dao.create, line)
-
-    def test_create_custom_not_implemented(self):
-        line = LineCUSTOM(context='default',
-                          number='1000')
-
-        self.assertRaises(NotImplementedError, line_dao.create, line)
-
     @patch('xivo_dao.helpers.db_manager.AsteriskSession')
     def test_create_database_error(self, Session):
         session = Mock()
@@ -650,8 +612,7 @@ class TestLineDao(DAOTestCase):
         context = 'toto'
         secret = '1234'
 
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret)
 
