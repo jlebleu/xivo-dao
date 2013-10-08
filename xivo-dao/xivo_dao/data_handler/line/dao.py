@@ -184,9 +184,6 @@ def edit(session, line):
     line_row, protocol_row = _get_line_and_protocol(session, line)
     db_converter.update_source(line_row, protocol_row, line)
 
-    print line.username
-    print line_row.name
-
     session.begin()
     session.add(line_row)
     session.add(protocol_row)

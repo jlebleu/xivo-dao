@@ -582,8 +582,6 @@ class TestLineDao(DAOTestCase):
                        provisioning_extension=123456)
 
         line_created = line_dao.create(line)
-        print line_created.id
-        print line_created.protocolid
 
         result_protocol = (self.session.query(UserSIPSchema)
                            .filter(UserSIPSchema.id == line_created.protocolid)
