@@ -120,30 +120,30 @@ class LineSIPDBConverter(object):
 
         return protocol_row
 
-    MODEL_TO_LINE = {
+    LINE_TO_MODEL = {
         'id': 'id',
-        'username': 'name',
+        'name': 'username',
         'number': 'number',
         'context': 'context',
         'protocol': 'protocol',
         'protocolid': 'protocolid',
         'device': 'device',
         'configregistrar': 'configregistrar',
-        'provisioning_extension': 'provisioningid',
-        'device_slot': 'num',
+        'provisioningid': 'provisioning_extension',
+        'num': 'device_slot',
     }
 
-    MODEL_TO_PROTOCOL = {
-        'protocolid': 'id',
+    PROTOCOL_TO_MODEL = {
+        'id': 'protocolid',
         'context': 'context',
         'callerid': 'callerid',
-        'username': 'username',
+        'name': 'username',
         'secret': 'secret'
     }
 
     def update_source(self, line_row, protocol_row, model):
-        line_converter = DatabaseConverter(self.MODEL_TO_LINE, LineSIP, LineSchema)
-        protocol_converter = DatabaseConverter(self.MODEL_TO_PROTOCOL, LineSIP, UserSIPSchema)
+        line_converter = DatabaseConverter(self.LINE_TO_MODEL, LineSIP, LineSchema)
+        protocol_converter = DatabaseConverter(self.PROTOCOL_TO_MODEL, LineSIP, UserSIPSchema)
 
         line_converter.update_source(line_row, model)
         protocol_converter.update_source(protocol_row, model)
