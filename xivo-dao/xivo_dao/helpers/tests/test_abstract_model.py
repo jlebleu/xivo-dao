@@ -100,3 +100,36 @@ class TestModelsAbstract(unittest.TestCase):
         missing = model.missing_parameters()
 
         assert_that(missing, has_length(1))
+
+    def test_update_from_data_with_no_changes(self):
+        data = {}
+        model = TestModel(field1='value1')
+
+        model.update_from_data(data)
+
+        assert_that(model, has_property('field1', 'value1'))
+
+    def test_update_from_data_with_only_one_changes(self):
+        data = {
+            'field1': 'new_value1',
+        }
+        model = TestModel(field1='value1', field2='value2')
+
+        model.update_from_data(data)
+
+        assert_that(model, all_of(
+            has_property('field1', 'new_value1'),
+            has_property('field2', 'value2')))
+
+    def test_update_from_data_with_two_changes(self):
+        data = {
+            'field1': 'new_value1',
+            'field2': 'new_value2',
+        }
+        model = TestModel(field1='value1', field2='value2')
+
+        model.update_from_data(data)
+
+        assert_that(model, all_of(
+            has_property('field1', 'new_value1'),
+            has_property('field2', 'new_value2')))

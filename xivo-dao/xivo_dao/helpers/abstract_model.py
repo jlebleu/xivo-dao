@@ -21,7 +21,17 @@ from xivo_dao.data_handler.exception import InvalidParametersError
 class AbstractModels(object):
 
     def __init__(self, **kwargs):
-        self.update_from_data(kwargs)
+        self._check_invalid_parameters(kwargs.keys())
+
+        for model_field in self.FIELDS + self._RELATION.values():
+            model_field_value = kwargs.get(model_field, None)
+            setattr(self, model_field, model_field_value)
+
+    def _check_invalid_parameters(self, parameters):
+        invalid = self.invalid_parameters(parameters)
+
+        if len(invalid) > 0:
+            raise InvalidParametersError(invalid)
 
     def __eq__(self, other):
         class_name = self.__class__.__name__
@@ -34,15 +44,10 @@ class AbstractModels(object):
         return not self == other
 
     def update_from_data(self, data):
-        parameters = data.keys()
-        invalid = self.invalid_parameters(parameters)
+        self._check_invalid_parameters(data.keys())
 
-        if len(invalid) > 0:
-            raise InvalidParametersError(invalid)
-
-        for model_field in self.FIELDS + self._RELATION.values():
-            model_field_value = data.get(model_field, None)
-            setattr(self, model_field, model_field_value)
+        for parameter, value in data.iteritems():
+            setattr(self, parameter, value)
 
     @classmethod
     def from_user_data(cls, properties):
