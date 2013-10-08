@@ -50,6 +50,11 @@ class Extension(AbstractModels):
 
     _RELATION = {}
 
+    def __init__(self, *args, **kwargs):
+        AbstractModels.__init__(self, *args, **kwargs)
+        if self.commented is None:
+            self.commented = False
+
 
 class ExtensionDBConverter(DatabaseConverter):
     def __init__(self):

@@ -159,10 +159,7 @@ class TestCallLogDAO(DAOTestCase):
             cel_ids = ()
         if date is None:
             date = datetime.now()
-        call_log = Mock(CallLog)
+        call_log = CallLog(id=id, date=date, duration=timedelta(0))
+        call_log.add_related_cels(cel_ids)
         self.call_log_rows.append(CallLogSchema(id=id, date=date, duration=timedelta(3)))
-        call_log.id = id
-        call_log.get_related_cels.return_value = cel_ids
-        call_log.date = date
-        call_log.duration = timedelta(0)
         return call_log

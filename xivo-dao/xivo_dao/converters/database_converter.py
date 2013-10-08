@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2013 Avencall
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 
 class DatabaseConverter(object):
 
@@ -30,11 +47,12 @@ class DatabaseConverter(object):
         db_columns = self._remap_columns(model_columns, self.model_mapping)
         self._update_object(db_columns, db_row)
 
-    def _extract_columns(self, db_row, columns):
+    def _extract_columns(self, source_object, columns):
         extracted_values = {}
         for column_name in columns:
-            if hasattr(db_row, column_name):
-                extracted_values[column_name] = getattr(db_row, column_name)
+            if not hasattr(source_object, column_name):
+                raise ValueError('column %s does not exist in object %s' % (column_name, type(source_object)))
+            extracted_values[column_name] = getattr(source_object, column_name)
         return extracted_values
 
     def _remap_columns(self, columns, mapping):

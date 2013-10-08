@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2013 Avencall
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
+
 import unittest
 
 from hamcrest import *
@@ -17,18 +34,6 @@ class TestDatabaseConverterToModel(unittest.TestCase):
         mapping = {}
 
         db_row = Mock()
-
-        converter = DatabaseConverter(mapping, self.Schema, self.Model)
-        result = converter.to_model(db_row)
-
-        self.Model.assert_called_once_with()
-        assert_that(result, same_instance(self.model))
-
-    def test_to_model_empty_db_row(self):
-        mapping = {'db_field': 'model_field'}
-
-        db_row = Mock()
-        del db_row.db_field
 
         converter = DatabaseConverter(mapping, self.Schema, self.Model)
         result = converter.to_model(db_row)
@@ -63,10 +68,8 @@ class TestDatabaseConverterToModel(unittest.TestCase):
         del db_row.does_not_exist
 
         converter = DatabaseConverter(mapping, self.Schema, self.Model)
-        result = converter.to_model(db_row)
 
-        self.Model.assert_called_once_with(model_field=value)
-        assert_that(result, same_instance(self.model))
+        self.assertRaises(ValueError, converter.to_model, db_row)
 
 
 class TestDatabaseConverterToSource(unittest.TestCase):
@@ -87,18 +90,6 @@ class TestDatabaseConverterToSource(unittest.TestCase):
         self.Schema.assert_called_once_with()
         assert_that(result, same_instance(self.db_row))
 
-    def test_to_source_empty_model(self):
-        mapping = {'db_field': 'model_field'}
-
-        model = Mock()
-        del model.model_field
-
-        converter = DatabaseConverter(mapping, self.Schema, self.Model)
-        result = converter.to_source(model)
-
-        self.Schema.assert_called_once_with()
-        assert_that(result, same_instance(self.db_row))
-
     def test_to_source(self):
         value = 'value'
         mapping = {'db_field': 'model_field'}
@@ -112,7 +103,7 @@ class TestDatabaseConverterToSource(unittest.TestCase):
         self.Schema.assert_called_once_with(db_field=value)
         assert_that(result, same_instance(self.db_row))
 
-    def test_from_mode_with_nonexistent_column(self):
+    def test_to_source_with_nonexistent_column(self):
         value = 'value'
         mapping = {
             'db_field': 'model_field',
@@ -124,10 +115,8 @@ class TestDatabaseConverterToSource(unittest.TestCase):
         del model.does_not_exist
 
         converter = DatabaseConverter(mapping, self.Schema, self.Model)
-        result = converter.to_source(model)
 
-        self.Schema.assert_called_once_with(db_field=value)
-        assert_that(result, same_instance(self.db_row))
+        self.assertRaises(ValueError, converter.to_source, model)
 
 
 class TestDatabaseConverterUpdateModel(unittest.TestCase):
@@ -147,24 +136,6 @@ class TestDatabaseConverterUpdateModel(unittest.TestCase):
         db_row.db_field = value
 
         model = Mock()
-
-        converter = DatabaseConverter(mapping, self.Schema, self.Model)
-        converter.update_model(model, db_row)
-
-        assert_that(model.model_field, equal_to(value))
-
-    def test_update_model_nothing_to_update(self):
-        value = 'value'
-
-        mapping = {
-            'db_field': 'model_field'
-        }
-
-        db_row = Mock()
-        del db_row.db_field
-
-        model = Mock()
-        model.model_field = value
 
         converter = DatabaseConverter(mapping, self.Schema, self.Model)
         converter.update_model(model, db_row)
