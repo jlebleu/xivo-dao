@@ -304,7 +304,6 @@ class TestDeviceServices(unittest.TestCase):
                        device_slot=1,
                        context=context,
                        username=username,
-                       name=username,
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)
@@ -365,7 +364,6 @@ class TestDeviceServices(unittest.TestCase):
                        device_slot=1,
                        context=context,
                        username=username,
-                       name=username,
                        secret=secret,
                        callerid=callerid,
                        configregistrar=configregistrar)

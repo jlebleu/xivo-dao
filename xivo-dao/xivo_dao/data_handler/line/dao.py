@@ -83,7 +83,7 @@ def find_all_by_protocol(session, protocol, order=None):
 
 
 @daosession
-def find_all_by_name(session, name, order=None):
+def find_all_by_username(session, name, order=None):
     search = '%%%s%%' % name.lower()
 
     line_rows = (_new_query(session, order)

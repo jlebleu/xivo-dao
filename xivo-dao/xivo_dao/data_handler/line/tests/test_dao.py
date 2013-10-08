@@ -146,7 +146,7 @@ class TestLineDao(DAOTestCase):
         assert_that(lines, has_length(1))
         line_found = lines[0]
         assert_that(line_found, has_property('id', line.id))
-        assert_that(line_found, has_property('name', name))
+        assert_that(line_found, has_property('username', name))
 
     def test_find_all_two_lines(self):
         name1 = 'Pascal'
@@ -165,10 +165,10 @@ class TestLineDao(DAOTestCase):
         assert_that(lines, has_items(
             all_of(
                 has_property('id', line1.id),
-                has_property('name', name1)),
+                has_property('username', name1)),
             all_of(
                 has_property('id', line2.id),
-                has_property('name', name2))
+                has_property('username', name2))
         ))
 
     def test_find_all_default_order_by_name_context(self):
@@ -219,43 +219,43 @@ class TestLineDao(DAOTestCase):
         assert_that(lines[0].id, equal_to(line_first.id))
         assert_that(lines[1].id, equal_to(line_last.id))
 
-    def test_find_all_by_name_no_line(self):
-        result = line_dao.find_all_by_name('abc')
+    def test_find_all_by_username_no_line(self):
+        result = line_dao.find_all_by_username('abc')
 
         assert_that(result, equal_to([]))
 
-    def test_find_all_by_name_not_right_name(self):
+    def test_find_all_by_username_not_right_name(self):
         name = 'Lord'
         wrong_name = 'Gregory'
 
         self.add_line(name=name)
 
-        result = line_dao.find_all_by_name(wrong_name)
+        result = line_dao.find_all_by_username(wrong_name)
 
         assert_that(result, equal_to([]))
 
-    def test_find_all_by_name(self):
+    def test_find_all_by_username(self):
         name = 'ddd'
         line_sip = self.add_usersip(name=name)
         line = self.add_line(protocolid=line_sip.id,
                              name=name,
                              context='sss')
 
-        result = line_dao.find_all_by_name(name)
+        result = line_dao.find_all_by_username(name)
 
         assert_that(result, contains(
             all_of(
                 has_property('id', line.id),
-                has_property('name', name)
+                has_property('username', name)
             )
         ))
 
-    def test_find_all_by_name_no_lines(self):
-        result = line_dao.find_all_by_name('')
+    def test_find_all_by_username_no_lines(self):
+        result = line_dao.find_all_by_username('')
 
         assert_that(result, has_length(0))
 
-    def test_find_all_by_name_partial(self):
+    def test_find_all_by_username_partial(self):
         name = 'Lord'
         partial_fullname = 'rd'
 
@@ -263,16 +263,16 @@ class TestLineDao(DAOTestCase):
         line = self.add_line(protocolid=line_sip.id,
                              name=name)
 
-        result = line_dao.find_all_by_name(partial_fullname)
+        result = line_dao.find_all_by_username(partial_fullname)
 
         assert_that(result, has_length(1))
         assert_that(result, contains(
             all_of(
                 has_property('id', line.id),
-                has_property('name', name),
+                has_property('username', name),
             )))
 
-    def test_find_all_by_name_two_lines_default_order(self):
+    def test_find_all_by_username_two_lines_default_order(self):
         search_term = 'lord'
 
         line_sip = self.add_usersip(name='Lordy')
@@ -288,7 +288,7 @@ class TestLineDao(DAOTestCase):
                       name='Toto',
                       context='a')
 
-        result = line_dao.find_all_by_name(search_term)
+        result = line_dao.find_all_by_username(search_term)
 
         assert_that(result, has_length(2))
         assert_that(result, contains(
@@ -397,7 +397,7 @@ class TestLineDao(DAOTestCase):
 
         assert_that(result, all_of(
             has_property('id', expected_ule.line.id),
-            has_property('name', expected_ule.line.name),
+            has_property('username', expected_ule.line.name),
             has_property('context', expected_ule.line.context)
         ))
 

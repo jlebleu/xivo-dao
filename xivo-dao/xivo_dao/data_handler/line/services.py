@@ -44,8 +44,8 @@ def find_all(order=None):
     return dao.find_all(order=order)
 
 
-def find_all_by_name(name):
-    return dao.find_all_by_name(name)
+def find_all_by_username(name):
+    return dao.find_all_by_username(name)
 
 
 def find_all_by_protocol(protocol):

@@ -82,8 +82,8 @@ def populate_sip_line(config, confregistrar, line, extension):
         config['raw_config']['sip_lines'] = dict()
     config['raw_config']['sip_lines'][str(line.device_slot)] = dict()
     line_dict = config['raw_config']['sip_lines'][str(line.device_slot)]
-    line_dict['auth_username'] = line.name
-    line_dict['username'] = line.name
+    line_dict['auth_username'] = line.username
+    line_dict['username'] = line.username
     line_dict['password'] = line.secret
     line_dict['display_name'] = caller_id.extract_displayname(line.callerid)
     line_dict['number'] = extension.exten

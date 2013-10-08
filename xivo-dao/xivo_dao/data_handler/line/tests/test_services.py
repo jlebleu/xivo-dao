@@ -102,29 +102,29 @@ class TestLineServices(unittest.TestCase):
 
         line_dao_find_all.assert_called_once_with(order=expected_order)
 
-    @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
-    def test_find_all_by_name(self, line_dao_find_all_by_name):
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_username')
+    def test_find_all_by_username(self, line_dao_find_all_by_username):
         expected_result = [Mock(LineSIP)]
         name = 'Lord'
 
-        line_dao_find_all_by_name.return_value = expected_result
+        line_dao_find_all_by_username.return_value = expected_result
 
-        result = line_services.find_all_by_name(name)
+        result = line_services.find_all_by_username(name)
 
         self.assertEquals(result, expected_result)
-        line_dao_find_all_by_name.assert_called_once_with(name)
+        line_dao_find_all_by_username.assert_called_once_with(name)
 
-    @patch('xivo_dao.data_handler.line.dao.find_all_by_name')
-    def test_find_all_by_name_no_result(self, line_dao_find_all_by_name):
+    @patch('xivo_dao.data_handler.line.dao.find_all_by_username')
+    def test_find_all_by_username_no_result(self, line_dao_find_all_by_username):
         expected_result = []
         name = 'Lord'
 
-        line_dao_find_all_by_name.return_value = expected_result
+        line_dao_find_all_by_username.return_value = expected_result
 
-        result = line_services.find_all_by_name(name)
+        result = line_services.find_all_by_username(name)
 
         self.assertEquals(result, expected_result)
-        line_dao_find_all_by_name.assert_called_once_with(name)
+        line_dao_find_all_by_username.assert_called_once_with(name)
 
     @patch('xivo_dao.data_handler.line.dao.find_all_by_device_id')
     def test_find_all_by_device_id(self, line_dao_find_all_by_device_id):
@@ -168,8 +168,7 @@ class TestLineServices(unittest.TestCase):
         context = 'toto'
         secret = '1234'
 
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret,
                        device_slot=1)
@@ -186,7 +185,7 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.services.make_provisioning_id')
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_missing_attributes(self, line_dao_create, make_provisioning_id):
-        line = LineSIP(name='lpko')
+        line = LineSIP(username='lpko')
 
         self.assertRaises(MissingParametersError, line_services.create, line)
         self.assertEquals(make_provisioning_id.call_count, 0)
@@ -195,10 +194,10 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_empty_attributes(self, line_dao_create, make_provisioning_id):
         line1 = LineSIP(context='',
-                       device_slot=1)
+                        device_slot=1)
 
         line2 = LineSIP(context='default',
-                       device_slot='')
+                        device_slot='')
 
         self.assertRaises(InvalidParametersError, line_services.create, line1)
         self.assertRaises(InvalidParametersError, line_services.create, line2)
@@ -208,13 +207,13 @@ class TestLineServices(unittest.TestCase):
     @patch('xivo_dao.data_handler.line.dao.create')
     def test_create_with_invalid_attributes(self, line_dao_create, make_provisioning_id):
         line1 = LineSIP(context='default',
-                       device_slot=0)
+                        device_slot=0)
 
         line2 = LineSIP(context='default',
-                       device_slot=-1)
+                        device_slot=-1)
 
         line3 = LineSIP(context='default',
-                       device_slot='abcd')
+                        device_slot='abcd')
 
         self.assertRaises(InvalidParametersError, line_services.create, line1)
         self.assertRaises(InvalidParametersError, line_services.create, line2)
@@ -240,8 +239,7 @@ class TestLineServices(unittest.TestCase):
         context = 'toto'
         secret = '1234'
 
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret,
                        device_slot=1)
@@ -265,8 +263,7 @@ class TestLineServices(unittest.TestCase):
         name = 'line'
         context = 'toto'
         secret = '1234'
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret,
                        device_slot=1)
@@ -310,8 +307,7 @@ class TestLineServices(unittest.TestCase):
         context = 'toto'
         secret = '1234'
 
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret,
                        device_slot=1)
@@ -339,8 +335,7 @@ class TestLineServices(unittest.TestCase):
         secret = '1234'
         device_id = '2'
         device = Device(id=device_id)
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret,
                        device=device_id,
@@ -369,8 +364,7 @@ class TestLineServices(unittest.TestCase):
         context = 'toto'
         secret = '1234'
         device_id = '2'
-        line = LineSIP(name=name,
-                       context=context,
+        line = LineSIP(context=context,
                        username=name,
                        secret=secret,
                        device=device_id,
@@ -466,7 +460,7 @@ class TestLineServices(unittest.TestCase):
                     callerid=expected_callerid)
         line = LineSIP(callerid=expected_callerid,
                        number='1000',
-                       name='toto')
+                       username='toto')
 
         line_dao_find_by_user_id.return_value = line
 
