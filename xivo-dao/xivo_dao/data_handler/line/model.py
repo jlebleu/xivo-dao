@@ -66,6 +66,7 @@ class LineSCCP(AbstractModels):
 
     FIELDS = [
         'id',
+        'username',
         'number',
         'context',
         'protocol',
@@ -140,9 +141,49 @@ class LineSIPDBConverter(object):
         self.protocol_converter.update_source(protocol_row, model)
 
 
+class LineSCCPDBConverter(object):
+
+    LINE_TO_MODEL = {
+        'id': 'id',
+        'name': 'username',
+        'number': 'number',
+        'context': 'context',
+        'protocol': 'protocol',
+        'protocolid': 'protocolid',
+        'device': 'device',
+        'configregistrar': 'configregistrar',
+        'provisioningid': 'provisioning_extension',
+        'num': 'device_slot',
+    }
+
+    PROTOCOL_TO_MODEL = {
+        'id': 'protocolid',
+        'context': 'context',
+    }
+
+    def __init__(self):
+        self.line_converter = DatabaseConverter(self.LINE_TO_MODEL, LineSchema, LineSCCP)
+        self.protocol_converter = DatabaseConverter(self.PROTOCOL_TO_MODEL, SCCPLineSchema, LineSCCP)
+
+    def to_model(self, line_row, protocol_row):
+        model = self.line_converter.to_model(line_row)
+        self.protocol_converter.update_model(model, protocol_row)
+        return model
+
+    def to_source(self, model):
+        line_row = self.line_converter.to_source(model)
+        line_row.protocol = 'sip'
+        protocol_row = self.protocol_converter.to_source(model)
+        protocol_row.username = ''
+        protocol_row.type = 'friend'
+        protocol_row.category = 'user'
+
+        return line_row, protocol_row
+
     def update_source(self, line_row, protocol_row, model):
         self.line_converter.update_source(line_row, model)
         self.protocol_converter.update_source(protocol_row, model)
 
 
-db_converter = LineSIPDBConverter()
+sip_db_converter = LineSIPDBConverter()
+sccp_db_converter = LineSCCPDBConverter()

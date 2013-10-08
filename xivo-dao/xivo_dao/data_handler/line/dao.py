@@ -21,13 +21,14 @@ import random
 from sqlalchemy.sql import and_
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.usersip import UserSIP as UserSIPSchema
 from xivo_dao.alchemy.user_line import UserLine as UserLineSchema
 from xivo_dao.alchemy.extension import Extension
 from xivo_dao.helpers.db_manager import daosession
 from xivo_dao.data_handler.exception import ElementNotExistsError, \
     ElementDeletionError, ElementCreationError, ElementEditionError
-from model import db_converter
+from model import sip_db_converter, sccp_db_converter
 from xivo_dao.data_handler.line.model import LineOrdering
 
 
@@ -130,20 +131,31 @@ def _rows_to_line_model(session, line_rows):
 
 def _row_to_line_model(session, line_row):
     protocol_row = _get_protocol_row(session, line_row)
-    return db_converter.to_model(line_row, protocol_row)
+    if line_row.protocol == 'sip':
+        return sip_db_converter.to_model(line_row, protocol_row)
+    elif line_row.protocol == 'sccp':
+        return sccp_db_converter.to_model(line_row, protocol_row)
+    else:
+        _line_type_is_not_supported()
 
 
 def _get_protocol_row(session, line):
     protocol = line.protocol.lower()
     if protocol == 'sip':
         row = session.query(UserSIPSchema).filter(line.protocolid == UserSIPSchema.id).first()
+    elif protocol == 'sccp':
+        row = session.query(SCCPLineSchema).get(line.protocolid)
     else:
-        raise NotImplementedError("Only SIP lines are supported")
+        _line_type_is_not_supported()
 
     if not row:
         raise ElementNotExistsError('Line %s' % protocol, id=line.protocolid)
 
     return row
+
+
+def _line_type_is_not_supported():
+    raise NotImplementedError("Only SIP or SCCP lines are supported")
 
 
 @daosession
@@ -159,7 +171,7 @@ def provisioning_id_exists(session, provd_id):
 
 @daosession
 def create(session, line):
-    line_row, protocol_row = db_converter.to_source(line)
+    line_row, protocol_row = sip_db_converter.to_source(line)
 
     _create_row(session, protocol_row)
     line_row.protocolid = protocol_row.id
@@ -182,7 +194,7 @@ def _create_row(session, row):
 @daosession
 def edit(session, line):
     line_row, protocol_row = _get_line_and_protocol(session, line)
-    db_converter.update_source(line_row, protocol_row, line)
+    sip_db_converter.update_source(line_row, protocol_row, line)
 
     session.begin()
     session.add(line_row)

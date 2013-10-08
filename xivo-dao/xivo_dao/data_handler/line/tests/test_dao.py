@@ -21,6 +21,7 @@ from xivo_dao.alchemy.cti_profile import CtiProfile
 from xivo_dao.alchemy.ctiphonehintsgroup import CtiPhoneHintsGroup
 from xivo_dao.alchemy.ctipresences import CtiPresences
 from xivo_dao.alchemy.linefeatures import LineFeatures as LineSchema
+from xivo_dao.alchemy.sccpline import SCCPLine as SCCPLineSchema
 from xivo_dao.alchemy.user_line import UserLine
 from xivo_dao.alchemy.userfeatures import UserFeatures as UserSchema
 from xivo_dao.data_handler.line import dao as line_dao
@@ -46,6 +47,7 @@ class TestLineDao(DAOTestCase):
         CtiPhoneHintsGroup,
         Extension,
         LineSchema,
+        SCCPLineSchema,
         UserLine,
         UserSIPSchema,
     ]
@@ -169,6 +171,32 @@ class TestLineDao(DAOTestCase):
             all_of(
                 has_property('id', line2.id),
                 has_property('username', name2))
+        ))
+
+    def test_find_all_sip_and_sccp(self):
+        name1 = 'Pascal'
+        name2 = 'George'
+
+        line_sccp = self.add_sccpline(name=name1)
+        line1 = self.add_line(protocolid=line_sccp.id,
+                              protocol='sccp',
+                              name=name1)
+        line_sip = self.add_usersip(name=name2)
+        line2 = self.add_line(protocolid=line_sip.id,
+                              name=name2)
+
+        lines = line_dao.find_all()
+
+        assert_that(lines, has_length(2))
+        assert_that(lines, has_items(
+            all_of(
+                has_property('id', line1.id),
+                has_property('username', name1),
+                has_property('protocol', 'sccp')),
+            all_of(
+                has_property('id', line2.id),
+                has_property('username', name2),
+                has_property('protocol', 'sip'))
         ))
 
     def test_find_all_default_order_by_name_context(self):
