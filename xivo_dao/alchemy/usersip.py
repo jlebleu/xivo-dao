@@ -49,6 +49,12 @@ class UserSIP(Base):
                            metadata=Base.metadata),
                       nullable=False, server_default='default')
     allowtransfer = Column(Integer)
+    cc_agent_policy = Column(Enum('never', 'generic', 'native',
+                              name='usersip_cc_agent_policy',
+                              metadata=Base.metadata))
+    cc_monitor_policy = Column(Enum('never', 'generic', 'native', 'always',
+                              name='usersip_cc_monitor_policy',
+                              metadata=Base.metadata))
     fromuser = Column(String(80))
     fromdomain = Column(String(255))
     mailbox = Column(String(80))
