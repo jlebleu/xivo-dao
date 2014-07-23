@@ -24,6 +24,7 @@ from xivo_dao.alchemy.agentglobalparams import AgentGlobalParams
 from xivo_dao.alchemy.agentgroup import AgentGroup
 from xivo_dao.alchemy.agentqueueskill import AgentQueueSkill
 from xivo_dao.alchemy.attachment import Attachment
+from xivo_dao.alchemy.call_completion import CallCompletion
 from xivo_dao.alchemy.call_log import CallLog
 from xivo_dao.alchemy.callerid import Callerid
 from xivo_dao.alchemy.callfilter import Callfilter
