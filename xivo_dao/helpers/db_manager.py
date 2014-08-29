@@ -45,7 +45,8 @@ DaoSession = None
 def daosession(func):
     @wraps(func)
     def wrapped(*args, **kwargs):
-        return _execute_with_session(DaoSession, func, args, kwargs)
+        s = kwargs.pop('_session', DaoSession)
+        return _execute_with_session(s, func, args, kwargs)
     return wrapped
 
 
