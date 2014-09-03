@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-DB_URI = 'postgresql://asterisk:proformatique@localhost/asterisk'
 SQL_DEBUG = False
 BUS_EXCHANGE_NAME = 'xivo'
 BUS_EXCHANGE_TYPE = 'fanout'

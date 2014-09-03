@@ -66,7 +66,7 @@ def _apply_and_flush(func, session, args, kwargs):
     return result
 
 
-def _init():
+def init():
     _init_asterisk()
 
 
@@ -82,13 +82,10 @@ def new_scoped_session(url, echo=False, autoflush=False, autocommit=True):
 
 def reinit():
     close()
-    _init()
+    init()
 
 
 def close():
     engine = DaoSession.bind
     DaoSession.close()
     engine.dispose()
-
-
-_init()
