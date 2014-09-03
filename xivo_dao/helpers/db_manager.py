@@ -38,7 +38,6 @@ def todict(self):
 Base = declarative_base()
 Base.todict = todict
 
-_dao_engine = None
 DaoSession = None
 
 
@@ -72,18 +71,13 @@ def _init():
 
 
 def _init_asterisk():
-    global _dao_engine
     global DaoSession
-    _dao_engine = _new_engine(config.DB_URI)
-    DaoSession = _new_scoped_session(_dao_engine)
+    DaoSession = new_scoped_session(config.DB_URI)
 
 
-def _new_engine(url):
-    return create_engine(url, echo=config.SQL_DEBUG)
-
-
-def _new_scoped_session(engine):
-    return scoped_session(sessionmaker(bind=engine, autoflush=False, autocommit=True))
+def new_scoped_session(url, echo=False, autoflush=False, autocommit=True):
+    engine = create_engine(url, echo=echo)
+    return scoped_session(sessionmaker(bind=engine, autoflush=autoflush, autocommit=autocommit))
 
 
 def reinit():
@@ -92,8 +86,9 @@ def reinit():
 
 
 def close():
+    engine = DaoSession.bind
     DaoSession.close()
-    _dao_engine.dispose()
+    engine.dispose()
 
 
 _init()
